@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Garcom {
+  id        Int      @id @default(autoincrement())
+  telefone  String? 
+  nome      String
+  turno     String?
+  removido  Boolean  @default(false)
+  mesas     Mesa[]
+}
+
+model Mesa {
+  id         Int      @id @default(autoincrement())
+  numero     Int
+  capacidade Int
+  garcomId   Int
+  removido   Boolean  @default(false)
+  garcom     Garcom   @relation(fields: [garcomId], references: [id])
+  pedidos    Pedido[]
+}
+
+model Prato {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  descricao String?
+  preco     Decimal  @db.Decimal(10,2)
+  removido  Boolean  @default(false)
+  pedidos   PedidoPrato[]
+}
+
+model Pedido {
+  id          Int           @id @default(autoincrement())
+  mesaId      Int
+  dataPedido  DateTime      @default(now())
+  valorTotal  Decimal       @db.Decimal(10,2)
+  status      String?
+  observacoes String?
+  removido    Boolean       @default(false)
+  mesa        Mesa          @relation(fields: [mesaId], references: [id])
+  itens       PedidoPrato[]
+}
+
+model PedidoPrato {
+  id            Int      @id @default(autoincrement())
+  pedidoId      Int
+  pratoId       Int
+  quantidade    Int       @default(1)
+  precoUnitario Decimal   @db.Decimal(10,2)
+  observacao    String?
+  removido      Boolean   @default(false)
+  pedido        Pedido    @relation(fields: [pedidoId], references: [id])
+  prato         Prato     @relation(fields: [pratoId], references: [id])
+}
+
+model Usuario {
+  id       Int      @id @default(autoincrement())
+  email    String   @unique
+  senha    String
+  nome     String
+  removido Boolean  @default(false)
+}
