@@ -5,6 +5,7 @@ const app = express();
 
 const usuarioRoutes = require('./routes/usuario.routes.js');
 const mesaRoutes = require('./routes/mesa.routes.js');
+const produtoRoutes = require('./routes/produto.routes.js');
 
 dotenv.config();
 
@@ -13,5 +14,6 @@ app.use(cors());
 
 app.use('/usuarios', usuarioRoutes);
 app.use('/mesa', mesaRoutes);
+app.use('/produto', produtoRoutes);
 
 module.exports = app;
