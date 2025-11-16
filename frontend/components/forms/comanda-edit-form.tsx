@@ -160,6 +160,44 @@ export function ComandaEditForm({ initialData }: ComandaEditFormProps) {
     )
   }
 
+  const handleDelete = async () => {
+    if (!window.confirm("Tem certeza que deseja deletar esta comanda? Esta ação não pode ser desfeita.")) {
+      return
+    }
+
+    setIsLoading(true)
+    const token = localStorage.getItem("token")
+    if (!token) {
+      toast.error("Autenticação expirou.")
+      router.push("/login")
+      return
+    }
+
+    toast.promise(
+      fetch(`http://localhost:3001/comanda/${initialData.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      }).then(async (res) => {
+        if (!res.ok) {
+          const errorData = await res.json()
+          throw new Error(errorData.error || "Falha ao deletar comanda.")
+        }
+        return res.json()
+      }),
+      {
+        loading: "Deletando comanda...",
+        success: () => {
+          router.push("/dashboard")
+          return "Comanda deletada com sucesso!"
+        },
+        error: (err) => {
+          setIsLoading(false)
+          return err.message
+        },
+      }
+    )
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Status and Observacao */}
@@ -243,7 +281,15 @@ export function ComandaEditForm({ initialData }: ComandaEditFormProps) {
           </ScrollArea>
       </div>
 
-      <div className="flex justify-end pt-4">
+      <div className="flex justify-between items-center pt-4">
+        <Button 
+            type="button" 
+            variant="destructive" 
+            onClick={handleDelete}
+            disabled={isLoading}
+        >
+          Deletar Comanda
+        </Button>
         <Button type="submit" disabled={isLoading}>
           {isLoading ? "Salvando..." : "Salvar Alterações"}
         </Button>
