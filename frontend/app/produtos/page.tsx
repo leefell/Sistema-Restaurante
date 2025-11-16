@@ -3,10 +3,10 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link" // Import Link
+import Link from "next/link"
 import { ColumnDef } from "@tanstack/react-table"
 import { MoreHorizontal } from "lucide-react"
-import { IconArrowLeft } from "@tabler/icons-react" // Import IconArrowLeft
+import { IconArrowLeft } from "@tabler/icons-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -17,21 +17,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { MesasDataTable } from "@/components/mesas-data-table"
+import { ProdutosDataTable } from "@/components/produtos-data-table"
 import { toast } from "sonner"
 
-export interface Mesa {
+export interface Produto {
   id: number
-  numero: number
+  nome: string
   descricao: string | null
+  quantidade: number
+  preco: number
   removido: boolean
 }
 
-export default function MesasPage() {
-  const [mesas, setMesas] = useState<Mesa[]>([])
+export default function ProdutosPage() {
+  const [produtos, setProdutos] = useState<Produto[]>([])
   const router = useRouter()
 
-  const fetchMesas = useCallback(async () => {
+  const fetchProdutos = useCallback(async () => {
     const token = localStorage.getItem("token")
     if (!token) {
       router.push("/login")
@@ -39,45 +41,60 @@ export default function MesasPage() {
     }
 
     try {
-      const response = await fetch("http://localhost:3001/mesa", { 
+      const response = await fetch("http://localhost:3001/produto", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
       if (response.ok) {
         const data = await response.json()
-        setMesas(data)
+        setProdutos(data)
       } else {
-        console.error("Falha ao buscar mesas")
+        console.error("Falha ao buscar produtos")
         if (response.status === 401 || response.status === 403) {
           localStorage.removeItem("token")
           router.push("/login")
         }
       }
     } catch (error) {
-      console.error("Erro ao buscar mesas:", error)
-      toast.error("Não foi possível carregar as mesas.")
+      console.error("Erro ao buscar produtos:", error)
+      toast.error("Não foi possível carregar os produtos.")
     }
   }, [router])
 
   useEffect(() => {
-    fetchMesas()
-  }, [fetchMesas])
+    fetchProdutos()
+  }, [fetchProdutos])
 
-  // Define as colunas da tabela
-  const columns: ColumnDef<Mesa>[] = [
+  const columns: ColumnDef<Produto>[] = [
     {
-      accessorKey: "numero",
-      header: "Número",
+      accessorKey: "nome",
+      header: "Nome",
     },
     {
       accessorKey: "descricao",
       header: "Descrição",
     },
     {
+      accessorKey: "quantidade",
+      header: "Quantidade",
+    },
+    {
+      accessorKey: "preco",
+      header: "Preço",
+      cell: ({ row }) => {
+        const amount = parseFloat(row.getValue("preco"))
+        const formatted = new Intl.NumberFormat("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        }).format(amount)
+        return <div className="text-right font-medium">{formatted}</div>
+      },
+    },
+    {
       id: "actions",
       cell: ({ row }) => {
-        const mesa = row.original
+        const produto = row.original
 
         const handleDelete = async () => {
           const token = localStorage.getItem("token")
@@ -87,7 +104,7 @@ export default function MesasPage() {
           }
 
           toast.promise(
-            fetch(`http://localhost:3001/mesa/${mesa.id}`, { 
+            fetch(`http://localhost:3001/produto/${produto.id}`, {
               method: "DELETE",
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -95,13 +112,13 @@ export default function MesasPage() {
             }).then(async (response) => {
               if (!response.ok) {
                 const errorData = await response.json()
-                throw new Error(errorData.error || "Falha ao remover mesa.")
+                throw new Error(errorData.error || "Falha ao remover produto.")
               }
-              fetchMesas()
+              fetchProdutos()
             }),
             {
-              loading: "Removendo mesa...",
-              success: "Mesa removida com sucesso!",
+              loading: "Removendo produto...",
+              success: "Produto removido com sucesso!",
               error: (err) => err.message,
             }
           )
@@ -118,12 +135,12 @@ export default function MesasPage() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Ações</DropdownMenuLabel>
               <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(mesa.id.toString())}
+                onClick={() => navigator.clipboard.writeText(produto.id.toString())}
               >
                 Copiar ID
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push(`/mesas/editar/${mesa.id}`)}>
+              <DropdownMenuItem onClick={() => router.push(`/produtos/editar/${produto.id}`)}>
                 Editar
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleDelete} className="text-red-600">
@@ -139,17 +156,17 @@ export default function MesasPage() {
   return (
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-2"> {/* Flex container for arrow and title */}
+        <div className="flex items-center gap-2">
           <Link href="/" passHref>
             <Button variant="ghost" size="icon" className="h-8 w-8">
               <IconArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold">Gerenciamento de Mesas</h1>
+          <h1 className="text-2xl font-bold">Gerenciamento de Produtos</h1>
         </div>
-        <Button onClick={() => router.push("/mesas/novo")}>Nova Mesa</Button>
+        <Button onClick={() => router.push("/produtos/novo")}>Novo Produto</Button>
       </div>
-      <MesasDataTable columns={columns} data={mesas} />
+      <ProdutosDataTable columns={columns} data={produtos} />
     </div>
   )
 }

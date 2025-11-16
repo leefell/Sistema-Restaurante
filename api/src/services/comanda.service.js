@@ -4,6 +4,17 @@ const prisma = require("../prismaClient.js");
 const getAllComandas = () => {
   return prisma.comanda.findMany({
     where: { removido: false },
+    include: {
+      mesa: true, // Include the related Mesa
+      produtos: {
+        include: {
+          produto: true, // Include the related Produto in Comanda_Produto
+        },
+      },
+    },
+    orderBy: {
+      dataAbertura: 'desc', // Show newest first
+    }
   });
 };
 
@@ -32,9 +43,17 @@ const getComandasPagas = () => {
   });
 };
 
-const getComandaByID = (idgi) => {
+const getComandaByID = (id) => {
   return prisma.comanda.findFirst({
     where: { id: id, removido: false },
+    include: {
+      mesa: true,
+      produtos: {
+        include: {
+          produto: true,
+        },
+      },
+    },
   });
 };
 

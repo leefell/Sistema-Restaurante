@@ -34,8 +34,8 @@ const data = {
       icon: IconListDetails,
     },
     {
-      title: "Cadastro de Prato",
-      url: "#",
+      title: "Cadastro de Produto",
+      url: "/produtos",
       icon: IconFileDescription,
     },
   ],
