@@ -14,6 +14,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum StatusComanda {
+  ABERTA
+  FECHADA
+  PAGA
+}
+
 model Usuario {
   id    Int     @id @default(autoincrement())
   nome  String
@@ -44,12 +50,14 @@ model Produto {
   comandas Comanda_Produto[]
 }
 
+
 model Comanda {
   id           Int      @id @default(autoincrement())
   mesaId       Int
   dataAbertura DateTime @default(now())
   observacao   String?
   removido     Boolean  @default(false)
+  status       StatusComanda @default(ABERTA)
 
   // Relacionamento 1:N (lado N)
   mesa Mesa @relation(fields: [mesaId], references: [id])
