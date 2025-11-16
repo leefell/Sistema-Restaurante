@@ -1,5 +1,32 @@
 const prisma = require("../prismaClient.js");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+const JWT_SECRET = process.env.JWT_SECRET;
+
+const loginUsuario = async (email, senha) => {
+  const usuario = await prisma.usuario.findUnique({
+    where: { email },
+  });
+
+  if (!usuario) {
+    throw new Error("Usuário não encontrado.");
+  }
+
+  const senhaValida = await bcrypt.compare(senha, usuario.senha);
+  if (!senhaValida) {
+    throw new Error("Senha inválida.");
+  }
+
+  const token = jwt.sign({ id: usuario.id, email: usuario.email }, JWT_SECRET, {
+    expiresIn: "1h", 
+  });
+
+  return { token };
+};
 
 const getAllUsuarios = () => {
   return prisma.usuario.findMany({
@@ -41,6 +68,7 @@ const deleteUsuario = (id) => {
 };
 
 module.exports = {
+  loginUsuario,
   getAllUsuarios,
   getUsuarioByID,
   createUsuario,

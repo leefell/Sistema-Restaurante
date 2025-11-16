@@ -1,5 +1,34 @@
 const usuarioService = require("../services/usuario.service.js");
 
+const getMe = async (req, res) => {
+  try {
+    const usuarioId = req.usuario.id;
+    const usuario = await usuarioService.getUsuarioByID(usuarioId);
+
+    if (!usuario) {
+      return res.status(404).json({ error: "Usuário não encontrado." });
+    }
+
+    const { senha, ...usuarioSemSenha } = usuario;
+
+    res.status(200).json(usuarioSemSenha);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "Erro ao buscar dados do usuário." + error.message });
+  }
+};
+
+const loginUsuario = async (req, res) => {
+  try {
+    const { email, senha } = req.body;
+    const resultado = await usuarioService.loginUsuario(email, senha);
+    res.status(200).json(resultado);
+  } catch (error) {
+    res.status(401).json({ error: "Falha na autenticação: " + error.message });
+  }
+};
+
 const getAllUsuarios = async (req, res) => {
   try {
     const usuarios = await usuarioService.getAllUsuarios();
@@ -12,7 +41,13 @@ const getAllUsuarios = async (req, res) => {
 const getUsuarioByID = async (req, res) => {
   try {
     const { id } = req.params;
-    const usuario = await usuarioService.getUsuarioByID(parseInt(id));
+    const parsedId = parseInt(id);
+
+    if (isNaN(parsedId)) {
+      return res.status(400).json({ error: "ID de usuário inválido." });
+    }
+
+    const usuario = await usuarioService.getUsuarioByID(parsedId);
     if (usuario) {
       res.status(200).json(usuario);
     } else {
@@ -59,6 +94,8 @@ const deleteUsuario = async (req, res) => {
 };
 
 module.exports = {
+  getMe,
+  loginUsuario,
   getAllUsuarios,
   getUsuarioByID,
   createUsuario,
