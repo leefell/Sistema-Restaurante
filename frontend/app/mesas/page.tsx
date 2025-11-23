@@ -3,10 +3,10 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link" // Import Link
+import Link from "next/link" 
 import { ColumnDef } from "@tanstack/react-table"
 import { MoreHorizontal } from "lucide-react"
-import { IconArrowLeft } from "@tabler/icons-react" // Import IconArrowLeft
+import { IconArrowLeft } from "@tabler/icons-react" 
 
 import { Button } from "@/components/ui/button"
 import {
@@ -64,7 +64,7 @@ export default function MesasPage() {
     fetchMesas()
   }, [fetchMesas])
 
-  // Define as colunas da tabela
+  // Aqui eu defino as colunas da tabela
   const columns: ColumnDef<Mesa>[] = [
     {
       accessorKey: "numero",
@@ -139,7 +139,7 @@ export default function MesasPage() {
   return (
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-2"> {/* Flex container for arrow and title */}
+        <div className="flex items-center gap-2">
           <Link href="/" passHref>
             <Button variant="ghost" size="icon" className="h-8 w-8">
               <IconArrowLeft className="h-4 w-4" />

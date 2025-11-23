@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
-import Link from "next/link" // Import Link
-import { IconArrowLeft } from "@tabler/icons-react" // Import IconArrowLeft
+import Link from "next/link" 
+import { IconArrowLeft } from "@tabler/icons-react" 
 import { MesaForm } from "@/components/forms/mesa-form"
 import { Mesa } from "@/app/mesas/page"
 import { toast } from "sonner"
-import { Button } from "@/components/ui/button" // Import Button
+import { Button } from "@/components/ui/button" 
 
 export default function EditarMesaPage() {
   const params = useParams()
@@ -28,7 +28,7 @@ export default function EditarMesaPage() {
       }
 
       try {
-        const response = await fetch(`http://localhost:3001/mesa/${id}`, { // Corrected URL
+        const response = await fetch(`http://localhost:3001/mesa/${id}`, { 
           headers: {
             Authorization: `Bearer ${token}`,
           },

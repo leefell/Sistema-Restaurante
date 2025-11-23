@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/table"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { toast } from "sonner"
-import { Comanda, Mesa, Produto, StatusComanda } from "@/components/comanda-grid"
+import { Comanda, Produto, StatusComanda } from "@/components/comanda-grid"
 import { IconX } from "@tabler/icons-react"
 
 interface ComandaEditFormProps {
@@ -42,19 +42,15 @@ export function ComandaEditForm({ initialData }: ComandaEditFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
-  // Data from API
   const [allProdutos, setAllProdutos] = useState<Produto[]>([])
 
-  // Form state
   const [status, setStatus] = useState<StatusComanda>(initialData.status)
   const [observacao, setObservacao] = useState(initialData.observacao || "")
   const [addedProdutos, setAddedProdutos] = useState<AddedProduto[]>([])
   
-  // Product search state
   const [searchTerm, setSearchTerm] = useState("")
   const [filteredProdutos, setFilteredProdutos] = useState<Produto[]>([])
 
-  // Fetch all products for the search functionality
   useEffect(() => {
     const fetchAllProdutos = async () => {
       const token = localStorage.getItem("token")

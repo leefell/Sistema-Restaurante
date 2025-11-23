@@ -24,27 +24,30 @@ import {
 } from "@/components/ui/table"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { toast } from "sonner"
-import { Mesa, Produto } from "@/components/comanda-grid" // Re-using interfaces
+import { Mesa, Produto } from "@/components/comanda-grid"
 import { IconX } from "@tabler/icons-react"
+
+type AddedProduto = {
+  produtoId: number
+  nome: string
+  quantidade: number
+  preco: number
+}
 
 export function ComandaForm() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
-  // Data from API
   const [mesas, setMesas] = useState<Mesa[]>([])
   const [produtos, setProdutos] = useState<Produto[]>([])
 
-  // Form state
   const [selectedMesaId, setSelectedMesaId] = useState<string>("")
   const [observacao, setObservacao] = useState("")
   const [addedProdutos, setAddedProdutos] = useState<AddedProduto[]>([])
   
-  // Product search state
   const [searchTerm, setSearchTerm] = useState("")
   const [filteredProdutos, setFilteredProdutos] = useState<Produto[]>([])
 
-  // Fetch initial data for selects
   useEffect(() => {
     const fetchData = async () => {
       const token = localStorage.getItem("token")
@@ -66,7 +69,7 @@ export function ComandaForm() {
     fetchData()
   }, [])
 
-  // Filter products based on search term
+  // Eu usei esse effect para buscar os produtos de acordo com as palavras digitadas
   useEffect(() => {
     if (searchTerm) {
       const lowercasedTerm = searchTerm.toLowerCase()
@@ -79,13 +82,12 @@ export function ComandaForm() {
   }, [searchTerm, produtos])
 
   const handleAddProduto = (produto: Produto) => {
-    // Avoid adding duplicates
     if (addedProdutos.some(p => p.produtoId === produto.id)) {
       toast.info("Produto já adicionado. Altere a quantidade na tabela.")
       return
     }
     setAddedProdutos(prev => [...prev, { produtoId: produto.id, nome: produto.nome, quantidade: 1, preco: Number(produto.preco) }])
-    setSearchTerm("") // Clear search after adding
+    setSearchTerm("") 
   }
 
   const handleRemoveProduto = (produtoId: number) => {
@@ -118,6 +120,9 @@ export function ComandaForm() {
       return
     }
 
+    // Eu achei interessante que passando o 'create' ele 
+    // ja faz um looping e cria os produtos da tabela
+    // comanda_produtos
     const comandaData = {
       mesaId: parseInt(selectedMesaId, 10),
       observacao,
@@ -144,7 +149,7 @@ export function ComandaForm() {
       {
         loading: "Criando comanda...",
         success: () => {
-          router.push("/dashboard") // Navigate on success
+          router.push("/dashboard")
           return "Comanda criada com sucesso!"
         },
         error: (err) => {
