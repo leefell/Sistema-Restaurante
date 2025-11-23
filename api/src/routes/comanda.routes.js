@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const comandaController = require("../controllers/comanda.controller.js");
+const authMiddleware = require("../middleware/auth.middleware.js");
+
+router.use(authMiddleware);
 
 router.get("/", comandaController.getAllComandas);
 router.get("/mesa/:mesaId", comandaController.getAllComandasPorMesa);

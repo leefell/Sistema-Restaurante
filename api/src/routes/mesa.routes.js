@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const mesaController = require("../controllers/mesa.controller.js");
+const authMiddleware = require("../middleware/auth.middleware.js");
+
+router.use(authMiddleware);
 
 router.get("/", mesaController.getAllMesas);
 router.get("/:id", mesaController.getMesaByID);
