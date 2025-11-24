@@ -1,22 +1,55 @@
-version: '3.8'
 services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - '3000:3000'
+    environment:
+      - NEXT_PUBLIC_API_URL=http://api:3001
+    depends_on:
+      - api
+    networks:
+      - app-network
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+    networks:
+      - app-network      
+  
   postgres:
     image: postgres:15-alpine
     restart: always
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=restaurante-db
+      - POSTGRES_DB=restaurante
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network  
 
   adminer:
     image: adminer
     restart: always
     ports:
       - 8080:8080
+    networks:
+      - app-network
+ 
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   postgres_data:
