@@ -5,48 +5,46 @@ Este é um sistema full-stack para gestão de restaurantes, composto por uma API
 ## Funcionalidades
 
 ### Backend (API)
-- Autenticação de usuários com JWT (Login/Cadastro).
-- Gerenciamento completo (CRUD) de Mesas.
-- Gerenciamento completo (CRUD) de Produtos.
-- Gerenciamento de Comandas:
-  - Abertura e fechamento de comandas.
-  - Associação de comandas a mesas.
-  - Adição e remoção de produtos em uma comanda.
-  - Alteração de status (Aberta, Fechada, Paga, Cancelada).
-  - Exclusão lógica (soft delete) para todos os módulos.
+- Autenticação de usuários baseada em JWT.
+- Gerenciamento completo (CRUD) de Mesas, Produtos e Usuários.
+- Gerenciamento de Comandas com controle de status (Aberta, Fechada, Paga, Cancelada).
+- Exclusão lógica (soft delete) implementada em todos os módulos principais.
 
 ### Frontend
-- Dashboard principal para visualização de comandas ativas.
-- Páginas dedicadas para o gerenciamento de Mesas e Produtos, com tabelas para listagem e ações de criar, editar e remover.
-- Formulários para criação e edição de Mesas e Produtos.
-- Sistema de criação de comandas com busca de produtos e associação a mesas.
-- Edição de comandas para adicionar/remover produtos e alterar status.
-- Páginas de Login e Cadastro de usuários.
-- Roteamento protegido para garantir que apenas usuários autenticados acessem as áreas de gerenciamento.
+- Dashboard para visualização e gerenciamento de comandas.
+- Seções dedicadas para o CRUD de Mesas e Produtos.
+- Formulários para criação e edição de todas as entidades.
+- Páginas de login e cadastro de usuários com rotas protegidas.
 
 ## Tecnologias Utilizadas
 
-- **Backend**: Node.js, Express.js, Prisma (ORM), PostgreSQL, JWT para autenticação.
+- **Backend**: Node.js, Express.js, Prisma (ORM), PostgreSQL, JWT.
 - **Frontend**: Next.js, React, TypeScript, Tailwind CSS, Shadcn/UI.
-- **Banco de Dados**: PostgreSQL (gerenciado via Docker Compose).
+- **Banco de Dados**: PostgreSQL, gerenciado via Docker Compose.
+- **Ferramentas**: Nodemon, ESLint, TypeScript.
 
-## Estrutura do Projeto
+## Pré-requisitos
 
-O projeto é um monorepo dividido em duas pastas principais:
-
-- `/api`: Contém todo o código-fonte do backend, incluindo rotas, controllers, serviços e configurações do Prisma.
-- `/frontend`: Contém a aplicação Next.js, com todas as páginas, componentes e hooks.
-
-## Como Executar o Projeto
-
-### Pré-requisitos
-- Node.js (v18 ou superior)
+- Node.js (versão 18 ou superior)
 - Docker e Docker Compose
-- npm, yarn ou pnpm
+- Um gerenciador de pacotes (npm, yarn, ou pnpm)
 
-### 1. Backend (`/api`)
+## Executando Localmente (Sem Docker)
 
-1.  **Navegue até a pasta da API:**
+Siga os passos abaixo para configurar e executar o ambiente de desenvolvimento local sem usar Docker para toda a aplicação.
+
+### 1. Iniciar o Banco de Dados (Docker)
+
+O banco de dados PostgreSQL é gerenciado pelo Docker. Para iniciá-lo, execute o seguinte comando a partir da raiz do projeto:
+
+```bash
+docker-compose up -d postgres
+```
+Este comando irá criar e iniciar apenas o container do banco de dados em segundo plano.
+
+### 2. Configurar o Backend (`/api`)
+
+1.  **Navegue até o diretório da API:**
     ```bash
     cd api
     ```
@@ -57,28 +55,37 @@ O projeto é um monorepo dividido em duas pastas principais:
     ```
 
 3.  **Configure as variáveis de ambiente:**
-    Crie um arquivo `.env` na raiz da pasta `/api` e preencha com base no exemplo abaixo.
+    Crie um arquivo chamado `.env` na raiz do diretório `/api` e adicione o seguinte conteúdo. Este arquivo é necessário para que a aplicação se conecte ao banco de dados e defina o segredo do JWT.
 
-4.  **Inicie o banco de dados com Docker:**
-    Na raiz do projeto, execute:
-    ```bash
-    docker-compose up -d
+    ```env
+    # String de conexão do banco de dados PostgreSQL
+    DATABASE_URL="postgresql://postgres:postgres@localhost:5432/restaurante?schema=public"
+
+    # Chave secreta para geração de tokens JWT
+    JWT_SECRET="seu-segredo-jwt-aqui"
     ```
 
-5.  **Execute as migrações do banco de dados:**
+4.  **Execute as migrações do banco de dados:**
+    Este comando aplica o schema de banco de dados definido no Prisma.
     ```bash
     npx prisma migrate dev
+    ```
+
+5.  **Gere o cliente Prisma:**
+    Este comando gera o cliente Prisma com base no seu schema para ser usado na aplicação.
+    ```bash
+    npx prisma generate
     ```
 
 6.  **Inicie o servidor da API:**
     ```bash
     npm run dev
     ```
-    O servidor estará rodando em `http://localhost:3001`.
+    O servidor do backend estará em execução no endereço `http://localhost:3001`.
 
-### 2. Frontend (`/frontend`)
+### 3. Configurar o Frontend (`/frontend`)
 
-1.  **Navegue até a pasta do frontend:**
+1.  **Em um novo terminal, navegue até o diretório do frontend:**
     ```bash
     cd frontend
     ```
@@ -88,138 +95,66 @@ O projeto é um monorepo dividido em duas pastas principais:
     npm install
     ```
 
-3.  **Inicie a aplicação:**
+3.  **Inicie a aplicação Next.js:**
     ```bash
     npm run dev
     ```
-    A aplicação estará disponível em `http://localhost:3000`.
+    A aplicação frontend estará disponível no endereço `http://localhost:3000`.
 
-## Variáveis de Ambiente (`/api/.env`)
+## Executando com Docker Compose (Todos os Serviços)
 
-Crie um arquivo `.env` na pasta `/api` com o seguinte conteúdo:
+Para executar toda a aplicação (frontend, backend, banco de dados e Adminer) usando Docker Compose, siga os passos abaixo. Certifique-se de que o Docker e o Docker Compose estão instalados e em execução.
 
-```env
-# Porta da API
-PORT=3001
+1.  **Construir e Iniciar os Serviços:**
+    A partir da raiz do projeto, execute o comando para construir as imagens (se ainda não existirem ou se houver mudanças nos Dockerfiles) e iniciar todos os serviços em segundo plano:
 
-# String de conexão do banco de dados PostgreSQL
-DATABASE_URL="postgresql://docker:docker@localhost:5432/restaurante?schema=public"
+    ```bash
+    docker-compose up -d --build
+    ```
+    Isso irá:
+    *   Construir a imagem Docker para o backend (`api`).
+    *   Construir a imagem Docker para o frontend (`frontend`).
+    *   Puxar a imagem do PostgreSQL (`postgres`).
+    *   Puxar a imagem do Adminer (`adminer`).
+    *   Criar e iniciar os containers para todos os serviços.
 
-# Chave secreta para geração de tokens JWT
-JWT_SECRET="SUA_CHAVE_SECRETA_AQUI"
-```
+2.  **Acessando a Aplicação:**
+    Após os containers estarem em execução, você pode acessar:
+    *   **Frontend:** `http://localhost:3000`
+    *   **Backend (API):** `http://localhost:3001`
+    *   **Adminer (Gerenciador de Banco de Dados):** `http://localhost:8080`
+        *   **Sistema:** PostgreSQL
+        *   **Servidor:** `postgres` (este é o nome do serviço no `docker-compose.yml`)
+        *   **Usuário:** `postgres`
+        *   **Senha:** `postgres`
+        *   **Banco de Dados:** `restaurante`
 
-## Rotas da API
+3.  **Visualizando Logs:**
+    Para ver os logs de todos os serviços em tempo real:
+    ```bash
+    docker-compose logs -f
+    ```
+    Para ver os logs de um serviço específico (ex: `api`):
+    ```bash
+    docker-compose logs -f api
+    ```
 
-<details>
-<summary><strong>Clique para expandir a documentação dos endpoints</strong></summary>
+4.  **Parando os Serviços:**
+    Para parar e remover os containers, redes e volumes criados pelo `docker-compose`:
+    ```bash
+    docker-compose down -v
+    ```
+    O `-v` é importante para remover os volumes de dados do PostgreSQL, garantindo um ambiente limpo se você precisar reiniciar do zero. Se você quiser apenas parar os serviços sem remover os volumes (mantendo seus dados), use:
+    ```bash
+    docker-compose down
+    ```
 
-A URL base para todas as rotas é `http://localhost:3001`.
-
-### Usuários
-
--   **`POST /usuarios`**: Cria um novo usuário.
-    *   **Corpo da Requisição (JSON):**
-        ```json
-        {
-          "nome": "Nome do Usuario",
-          "email": "usuario@email.com",
-          "senha": "senha123"
-        }
-        ```
-
--   **`POST /usuarios/login`**: Autentica um usuário e retorna um token JWT.
-    *   **Corpo da Requisição (JSON):**
-        ```json
-        {
-          "email": "usuario@email.com",
-          "senha": "senha123"
-        }
-        ```
-
--   **`GET /usuarios/me`**: Retorna os dados do usuário autenticado. (Requer token de autorização `Bearer`).
-
-### Mesas
-
--   **`GET /mesa`**: Lista todas as mesas.
-
--   **`POST /mesa`**: Cria uma nova mesa.
-    *   **Corpo da Requisição (JSON):**
-        ```json
-        {
-          "numero": 15,
-          "descricao": "Mesa perto do bar"
-        }
-        ```
-
--   **`PUT /mesa/:id`**: Atualiza uma mesa.
-    *   **Corpo da Requisição (JSON):**
-        ```json
-        {
-          "descricao": "Nova descrição"
-        }
-        ```
-
--   **`DELETE /mesa/:id`**: Remove (soft delete) uma mesa.
-
-### Produtos
-
--   **`GET /produto`**: Lista todos os produtos.
-
--   **`POST /produto`**: Cria um novo produto.
-    *   **Corpo da Requisição (JSON):**
-        ```json
-        {
-          "nome": "X-Burger",
-          "descricao": "Pão, bife, queijo e salada",
-          "quantidade": 100,
-          "preco": 25.50
-        }
-        ```
-
--   **`PUT /produto/:id`**: Atualiza um produto.
-    *   **Corpo da Requisição (JSON):**
-        ```json
-        {
-          "preco": 28.00
-        }
-        ```
-
--   **`DELETE /produto/:id`**: Remove (soft delete) um produto.
-
-### Comandas
-
--   **`GET /comanda`**: Lista todas as comandas.
-
--   **`POST /comanda`**: Cria uma nova comanda com produtos.
-    *   **Corpo da Requisição (JSON):**
-        ```json
-        {
-          "mesaId": 1,
-          "observacao": "Sem cebola",
-          "produtos": {
-            "create": [
-              { "produtoId": 1, "quantidade": 2 },
-              { "produtoId": 2, "quantidade": 1 }
-            ]
-          }
-        }
-        ```
-
--   **`PUT /comanda/:id`**: Atualiza uma comanda (status, observação ou produtos).
-    *   **Corpo da Requisição (JSON):**
-        ```json
-        {
-          "status": "FECHADA",
-          "produtos": {
-            "deleteMany": {},
-            "create": [
-              { "produtoId": 1, "quantidade": 1 }
-            ]
-          }
-        }
-        ```
-
--   **`DELETE /comanda/:id`**: Remove (soft delete) uma comanda.
-
-</details>
+5.  **Reconstruir Imagens (se necessário):**
+    Se você fez alterações nos Dockerfiles do `frontend` ou `api`, ou se deseja garantir que as imagens estejam atualizadas, você pode reconstruí-las antes de iniciar:
+    ```bash
+    docker-compose build
+    ```
+    E então iniciar:
+    ```bash
+    docker-compose up -d
+    ```
